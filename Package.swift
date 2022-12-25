@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "R2",
+    platforms: [.iOS(.v15), .tvOS(.v15), .macOS(.v11), .watchOS(.v8), .macCatalyst(.v15)],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -13,16 +14,15 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/awslabs/aws-sdk-swift.git", .upToNextMajor(from: "0.7.0")),
+        .package(url: "https://github.com/awslabs/smithy-swift", .upToNextMajor(from: "0.7.0")),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "R2",
-            dependencies: []),
-        .testTarget(
-            name: "R2Tests",
-            dependencies: ["R2"]),
+        .target(name: "R2", dependencies: [.product(name: "AWSS3", package: "aws-sdk-swift"),
+                                           .product(name: "AWSClientRuntime", package: "aws-sdk-swift"),
+                                           .product(name: "ClientRuntime", package: "smithy-swift")]),
+        .testTarget(name: "R2Tests", dependencies: ["R2", .product(name: "AWSS3", package: "aws-sdk-swift")]),
     ]
 )

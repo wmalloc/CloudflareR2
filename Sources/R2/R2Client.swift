@@ -21,7 +21,7 @@ public class R2Client {
 
     public init(config: R2ClientConfig) async throws {
         self.config = config
-        let clientConfiguration = try await S3Client.S3ClientConfiguration(credentialsProvider: config, endpointResolver: config, signingRegion: "us-west-2")
+        let clientConfiguration = try await S3Client.S3ClientConfiguration(credentialsProvider: config, endpointResolver: config, signingRegion: "auto")
         client = S3Client(config: clientConfiguration)
     }
 }

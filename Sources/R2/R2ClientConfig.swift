@@ -28,7 +28,7 @@ public struct R2ClientConfig: Hashable, Identifiable {
 
 public extension R2ClientConfig {
     var endPoint: String {
-        "\(accountId).r2.cloudflarestorage.com"
+        "https://\(accountId).r2.cloudflarestorage.com"
     }
 }
 

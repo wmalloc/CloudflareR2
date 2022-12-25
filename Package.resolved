@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "aws4",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kortac/AWS4.git",
+      "state" : {
+        "revision" : "c0360b86e86bef0daf76eb5c29ba8a8bd111ecae",
+        "version" : "1.0.4"
+      }
+    },
+    {
+      "identity" : "webservice",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wmalloc/WebService.git",
+      "state" : {
+        "revision" : "c6bbe907de633f6c586c2e504bdae10a2314a078",
+        "version" : "0.5.8"
+      }
+    }
+  ],
+  "version" : 2
+}

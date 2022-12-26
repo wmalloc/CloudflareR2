@@ -23,7 +23,7 @@ public class R2Client {
 
 public extension R2Client {
     func buckets(completion: ((Result<[String], Error>) -> Void)?) -> URLSessionDataTask? {
-        let signature = "".data(using: .utf8)!.sha256().lowercased()
+        let signature = "".data(using: .utf8)!.sha256.lowercased()
         let request = URLRequest(url: config.url)
             .setContentType(URLRequest.ContentType.json)
             .setHeader(HTTPHeader(name: URLRequest.Header.contentLength, value: "0"))
@@ -37,22 +37,15 @@ public extension R2Client {
             case .success(let data):
                 let decoder = XMLDecoder()
                 decoder.shouldProcessNamespaces = true
+                decoder.dateDecodingStrategy = .iso8601
                 do {
-                    let note = try decoder.decode(ListAllMyBucketsResult.self, from: data)
-                    print(note)
+                    let bucketResult = try decoder.decode(ListAllMyBucketsResult.self, from: data)
+                    print(bucketResult)
                 } catch {
                     print(error)
                 }
-                let response = String(data: data, encoding: .utf8) ?? ""
-                completion?(.success([response]))
+                completion?(.success([]))
             }
         }
-    }
-}
-
-extension Data {
-    func sha256() -> String {
-        let h = SHA256.hash(data: self)
-        return h.compactMap { String(format: "%02x", $0) }.joined()
     }
 }

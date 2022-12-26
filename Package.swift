@@ -20,7 +20,7 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(name: "R2", dependencies: ["AWS4", "WebService"], path: "Sources/Core"),
+        .target(name: "R2", dependencies: ["AWS4", "WebService", "XMLCoder"], path: "Sources/Core"),
         .target(name: "R2Concurrency", dependencies: ["AWS4", "WebService", "XMLCoder",
                                                       .product(name: "WebServiceConcurrency", package: "WebService")],
                 path: "Sources/Concurrency"),

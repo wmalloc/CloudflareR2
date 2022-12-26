@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  R2ClientConfig.swift
 //
 //
 //  Created by Waqar Malik on 12/24/22.
@@ -24,7 +24,14 @@ public struct R2ClientConfig: Hashable, Identifiable {
 }
 
 public extension R2ClientConfig {
+    var host: String {
+        "\(accountId).r2.cloudflarestorage.com"
+    }
     var endPoint: String {
-        "https://\(accountId).r2.cloudflarestorage.com"
+        "https://\(host)"
+    }
+    
+    var url: URL {
+        URL(string: endPoint)!
     }
 }

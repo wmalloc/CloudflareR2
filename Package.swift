@@ -15,14 +15,15 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/wmalloc/WebService.git", .upToNextMajor(from: "0.5.8")),
         .package(url: "https://github.com/kortac/AWS4.git", .upToNextMajor(from: "1.0.0")),
+        .package(url: "https://github.com/CoreOffice/XMLCoder.git", .upToNextMajor(from: "0.15.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(name: "R2", dependencies: ["AWS4", "WebService"], path: "Sources/Core"),
-        .target(name: "R2Concurrency", dependencies: ["AWS4", "WebService",
+        .target(name: "R2Concurrency", dependencies: ["AWS4", "WebService", "XMLCoder",
                                                       .product(name: "WebServiceConcurrency", package: "WebService")],
                 path: "Sources/Concurrency"),
-        .testTarget(name: "R2Tests", dependencies: ["R2"]),
+        .testTarget(name: "R2Tests", dependencies: ["R2", "XMLCoder"]),
     ]
 )

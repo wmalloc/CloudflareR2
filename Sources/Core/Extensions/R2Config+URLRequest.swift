@@ -18,8 +18,8 @@ public extension R2Config {
      
      - returns: Signed URLRequest
      */
-    func request(route: URLRequestRoutable, parameters: [String: String?]?, headers: [HTTPHeader]?) throws -> URLRequest {
-        try route.urlRequest(queryItems: parameters?.queryItems, headers: headers)
+    func request(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil, body: Data? = nil) throws -> URLRequest {
+        try route.urlRequest(queryItems: parameters?.queryItems, headers: headers, body: body)
             .signed(config: self)
     }
 }

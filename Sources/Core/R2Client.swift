@@ -27,6 +27,11 @@ public class R2Client {
         R2Route.accountId = config.accountId
     }
     
+    public let rfc3339DateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        return formatter
+    }()
     /**
      Return raw data
 
@@ -37,8 +42,8 @@ public class R2Client {
      
      - returns: Data Task which can be canceled
      */
-    public func data(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil, completion: ((Result<Data, Error>) -> Void)?) -> URLSessionDataTask? {
-        guard let request = try? config.request(route: route, parameters: parameters, headers: headers) else {
+    public func data(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil, body: Data? = nil, completion: ((Result<Data, Error>) -> Void)?) -> URLSessionDataTask? {
+        guard let request = try? config.request(route: route, parameters: parameters, headers: headers, body: body) else {
             return nil
         }
         return webService.dataTask(with: request) { (response) -> Data in
@@ -65,7 +70,7 @@ public class R2Client {
         return webService.dataTask(with: request) { (response) -> T in
             let decoder = XMLDecoder()
             decoder.shouldProcessNamespaces = true
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .formatted(self.rfc3339DateFormatter)
             return try decoder.decode(T.self, from: response.data)
         } completion: { result in
             completion?(result)

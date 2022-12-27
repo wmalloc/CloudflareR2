@@ -10,6 +10,7 @@ import R2
 import WebServiceConcurrency
 import WebService
 import XMLCoder
+import UniformTypeIdentifiers
 
 public extension R2Client {
     /**
@@ -39,7 +40,7 @@ public extension R2Client {
         try await webService.data(for: try config.request(route: route, parameters: parameters, headers: headers ), transform: { (response) -> T in
             let decoder = XMLDecoder()
             decoder.shouldProcessNamespaces = true
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .formatted(self.rfc3339DateFormatter)
             return try decoder.decode(T.self, from: response.data)
         })
     }
@@ -51,7 +52,7 @@ public extension R2Client {
      
      - returns: `ListAllMyBucketsResult`
      */
-    func buckets() async throws -> ListAllMyBucketsResult {
+    func listBuckets() async throws -> ListAllMyBucketsResult {
         try await request(route: R2Route.buckets)
     }
     
@@ -74,7 +75,7 @@ public extension R2Client {
      
      - returns: `ListBucketResult` List of Objects
      */
-    func objects(bucket: String, parameters: [String: String?]? = nil) async throws -> ListBucketResult {
+    func listObjects(bucket: String, parameters: [String: String?]? = nil) async throws -> ListBucketResult {
         try await request(route: R2Route.objects(bucket))
      }
     
@@ -87,7 +88,25 @@ public extension R2Client {
 
      - returns: `Data`
      */
-    func object(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil) async throws -> Data {
-        try await data(route: R2Route.object(name, bucket))
+    func getObject(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil) async throws -> Data {
+        try await data(route: R2Route.getObject(name, bucket))
+    }
+    
+    /**
+     Adds an object to a bucket.
+     
+     - parameter name:       The object name to get
+     - parameter bucket:     The bucket name containing the object.
+     - parameter object:     The object we need to put
+     - parameter type:       Type of object
+     
+     */
+    func putObject(name: String, toBucket bucket: String, object: Data, type: UTType) async throws {
+        let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
+        guard let urlRequest = try? config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object) else {
+            throw URLError(.badURL)
+        }
+        
+        _ = try await webService.session.data(for: urlRequest, delegate: nil)
     }
 }

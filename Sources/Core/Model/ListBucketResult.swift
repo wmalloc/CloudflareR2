@@ -9,7 +9,7 @@ import Foundation
 
 
 public struct ListBucketResult: Codable, Hashable {
-    let commonPrefixes: [String]?
+    let commonPrefixes: [Prefix]?
     let contents: [R2Object]
     let continuationToken: String?
     let delimiter: String?

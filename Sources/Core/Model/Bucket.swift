@@ -8,7 +8,7 @@
 import Foundation
 
 public struct Bucket: Codable, Hashable {
-    public let name: String?
+    public let name: String
     public let creationDate: Date
 
     enum CodingKeys: String, CodingKey {

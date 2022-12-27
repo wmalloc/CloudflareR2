@@ -18,7 +18,7 @@ public protocol URLRequestRoutable: URLRequestEncodable {
     var method: HTTPMethod { get }
     var host: String { get }
     var path: String { get }
-    var headers: [HTTPHeader] { get }
+    var headers: [HTTPHeader]? { get }
     var body: Data? { get }
     var queryItems: [URLQueryItem]? { get }
 }
@@ -31,7 +31,8 @@ public enum R2Route: URLRequestRoutable {
     case bucketCors(String)
     
     case objects(String)
-
+    case object(String, String)
+    
     public var method: HTTPMethod {
         switch self {
         case .buckets:
@@ -39,6 +40,8 @@ public enum R2Route: URLRequestRoutable {
         case .bucketCors:
             return .GET
         case .objects:
+            return .GET
+        case .object:
             return .GET
         }
     }
@@ -52,6 +55,8 @@ public enum R2Route: URLRequestRoutable {
             return bucket + "." + host
         case .objects(let bucket):
             return bucket + "." + host
+        case .object(_, let bucket):
+            return bucket + "." + host
         }
     }
     
@@ -59,26 +64,17 @@ public enum R2Route: URLRequestRoutable {
         switch self {
         case .buckets, .bucketCors, .objects:
             return ""
+        case .object(let name, _):
+            return "/\(name)"
         }
     }
     
-    public var headers: [HTTPHeader] {
-        let allHeaders: [HTTPHeader] = []
-        switch self {
-        case .buckets, .objects:
-            return allHeaders
-        case .bucketCors:
-            return allHeaders
-        }
+    public var headers: [HTTPHeader]? {
+        return nil
     }
     
     public var body: Data? {
-        switch self {
-        case .buckets, .objects:
-            return nil
-        case .bucketCors:
-            return nil
-        }
+        return nil
     }
     
     public var queryItems: [URLQueryItem]? {
@@ -89,6 +85,8 @@ public enum R2Route: URLRequestRoutable {
              return [URLQueryItem(name: "cors", value: nil)]
          case .objects:
              return [URLQueryItem(name: "list-type", value: "2")]
+         case .object:
+             return nil
         }
     }
 }

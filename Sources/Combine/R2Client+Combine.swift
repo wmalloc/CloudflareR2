@@ -1,14 +1,15 @@
 //
-//  R2Client+Concurrency.swift
+//  R2Client+Combine.swift
 //  
 //
-//  Created by Waqar Malik on 12/25/22.
+//  Created by Waqar Malik on 12/26/22.
 //
 
 import Foundation
 import R2
-import WebServiceConcurrency
+import Combine
 import WebService
+import WebServiceCombine
 import XMLCoder
 
 public extension R2Client {
@@ -19,13 +20,17 @@ public extension R2Client {
      - parameter parameters: If you need to add extra query parmeters to the query (Default: nil)
      - parameter headers:    extra headers (Default: nil)
      
-     - returns: Data
+     - returns: Data Publisher
      */
-    func data(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil) async throws -> Data {
-        let response = try await webService.data(for: try config.request(route: route, parameters: parameters, headers: headers))
-        return response.data
+    func data(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil) -> AnyPublisher<Data, Error> {
+        guard let request = try? config.request(route: route, parameters: parameters, headers: headers) else {
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
+        }
+        return webService.dataPublisher(for: request) { response in
+            response.data
+        }
     }
-
+    
     /**
      Return decoded data object
 
@@ -33,15 +38,18 @@ public extension R2Client {
      - parameter parameters: If you need to add extra query parmeters to the query (Default: nil)
      - parameter headers:    extra headers (Default: nil)
      
-     - returns: Object
+     - returns: Object publisher
      */
-    func request<T: Decodable>(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil) async throws -> T {
-        try await webService.data(for: try config.request(route: route, parameters: parameters, headers: headers ), transform: { (response) -> T in
+   func request<T: Decodable>(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil) -> AnyPublisher<T, Error> {
+        guard let request = try? config.request(route: route, parameters: parameters, headers: headers) else {
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
+        }
+        return webService.dataPublisher(for: request) { response in
             let decoder = XMLDecoder()
             decoder.shouldProcessNamespaces = true
             decoder.dateDecodingStrategy = .iso8601
             return try decoder.decode(T.self, from: response.data)
-        })
+        }
     }
 }
 
@@ -49,10 +57,10 @@ public extension R2Client {
     /**
      Returns a list of all buckets owned by the authenticated sender of the request.
      
-     - returns: `ListAllMyBucketsResult`
+     - returns: Publisher which can be canceled
      */
-    func buckets() async throws -> ListAllMyBucketsResult {
-        try await request(route: R2Route.buckets)
+    func buckets() -> AnyPublisher<ListAllMyBucketsResult, Error> {
+        request(route: R2Route.buckets)
     }
     
     /**
@@ -60,10 +68,10 @@ public extension R2Client {
      
      - parameter bucket:     The bucket name for which to get the cors configuration.
      
-     - returns: `CORSConfiguration`
+     - returns: Publisher which can be canceled
      */
-    func bucketCors(bucket: String) async throws -> CORSConfiguration {
-        try await request(route: R2Route.bucketCors(bucket))
+    func bucketCors(bucket: String) -> AnyPublisher<CORSConfiguration, Error> {
+        request(route: R2Route.bucketCors(bucket))
     }
     
     /**
@@ -72,10 +80,10 @@ public extension R2Client {
      - parameter bucket:     The bucket name containing the objects.
      - parameter parameters: parameters (Default: nil) `list-type, continuation-token, delimiter, encoding-type, fetch-owner, max-keys, prefix, start-after`
      
-     - returns: `ListBucketResult` List of Objects
+     - returns: Publisher which can be canceled
      */
-    func objects(bucket: String, parameters: [String: String?]? = nil) async throws -> ListBucketResult {
-        try await request(route: R2Route.objects(bucket))
+    func objects(bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<ListBucketResult, Error> {
+        request(route: R2Route.objects(bucket), parameters: parameters)
      }
     
     /**
@@ -85,9 +93,9 @@ public extension R2Client {
      - parameter bucket:     The bucket name containing the object.
      - parameter parameters: parameters (Default: nil) `partNumber, response-cache-control,response-content-disposition,response-content-encoding,response-content-language,response-content-type,response-expires,versionId`
 
-     - returns: `Data`
+     - returns: Publisher which can be canceled
      */
-    func object(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil) async throws -> Data {
-        try await data(route: R2Route.object(name, bucket))
+    func object(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<Data, Error> {
+        data(route: R2Route.object(name, bucket), parameters: parameters)
     }
 }

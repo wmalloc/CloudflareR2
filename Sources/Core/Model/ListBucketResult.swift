@@ -15,12 +15,13 @@ public struct ListBucketResult: Codable, Hashable {
     let delimiter: String?
     let encodingType: String?
     let isTruncated: Bool
-    let keyCount: Int
+    let keyCount: Int?
     let maxKeys: Int
     let name: String
     let nextContinuationToken: String?
     let prefix: String?
     let startAfter: String?
+    let marker: String?
         
     private enum CodingKeys: String, CodingKey {
         case commonPrefixes = "CommonPrefixes"
@@ -35,5 +36,6 @@ public struct ListBucketResult: Codable, Hashable {
         case nextContinuationToken = "NextContinuationToken"
         case prefix = "Prefix"
         case startAfter = "StartAfter"
+        case marker = "Marker"
     }
 }

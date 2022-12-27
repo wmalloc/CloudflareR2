@@ -8,7 +8,7 @@
 import Foundation
 
 public struct ListAllMyBucketsResult: Codable, Hashable {
-    public let buckets: [Bucket]
+    public let buckets: Buckets
     public let owner: Owner
 
     enum CodingKeys: String, CodingKey {

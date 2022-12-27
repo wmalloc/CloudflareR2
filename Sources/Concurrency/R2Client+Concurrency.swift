@@ -40,7 +40,7 @@ public extension R2Client {
         try await webService.data(for: try config.request(route: route, parameters: parameters, headers: headers ), transform: { (response) -> T in
             let decoder = XMLDecoder()
             decoder.shouldProcessNamespaces = true
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .formatted(self.rfc3339DateFormatter)
             return try decoder.decode(T.self, from: response.data)
         })
     }

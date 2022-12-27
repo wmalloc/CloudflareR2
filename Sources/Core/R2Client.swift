@@ -27,6 +27,11 @@ public class R2Client {
         R2Route.accountId = config.accountId
     }
     
+    public let rfc3339DateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        return formatter
+    }()
     /**
      Return raw data
 
@@ -65,7 +70,7 @@ public class R2Client {
         return webService.dataTask(with: request) { (response) -> T in
             let decoder = XMLDecoder()
             decoder.shouldProcessNamespaces = true
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .formatted(self.rfc3339DateFormatter)
             return try decoder.decode(T.self, from: response.data)
         } completion: { result in
             completion?(result)

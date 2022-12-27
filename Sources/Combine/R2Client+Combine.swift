@@ -112,7 +112,7 @@ public extension R2Client {
      */
     func putObject(name: String, toBucket bucket: String, object: Data, type: UTType) -> AnyPublisher<Void, Error>? {
         let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
-        guard let urlRequest = try? R2Route.putObject(name, bucket).urlRequest(headers: [header], body: object) else {
+        guard let urlRequest = try? config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object) else {
             return nil
         }
         

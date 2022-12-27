@@ -74,10 +74,10 @@ public extension R2Client {
      */
     func putObject(name: String, toBucket bucket: String, object: Data, type: UTType, completion: ((Error?) -> Void)?) -> URLSessionDataTask? {
         let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
-        guard let urlRequest = try? R2Route.putObject(name, bucket).urlRequest(headers: [header], body: object) else {
+        guard let urlRequest = try? config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object) else {
             return nil
         }
-        return webService.session.dataTask(with: urlRequest) { data, response, error in
+        let task = webService.session.dataTask(with: urlRequest) { data, response, error in
             if let error {
                 completion?(error)
                 return
@@ -96,5 +96,7 @@ public extension R2Client {
             }
             completion?(nil)
         }
+        task.resume()
+        return task
     }
 }

@@ -30,11 +30,15 @@ public enum R2Route: URLRequestRoutable {
     case buckets
     case bucketCors(String)
     
+    case objects(String)
+
     public var method: HTTPMethod {
         switch self {
         case .buckets:
             return .GET
         case .bucketCors:
+            return .GET
+        case .objects:
             return .GET
         }
     }
@@ -46,20 +50,22 @@ public enum R2Route: URLRequestRoutable {
             return host
         case .bucketCors(let bucket):
             return bucket + "." + host
+        case .objects(let bucket):
+            return bucket + "." + host
         }
     }
     
     public var path: String {
         switch self {
-        case .buckets, .bucketCors:
-            return "/"
+        case .buckets, .bucketCors, .objects:
+            return ""
         }
     }
     
     public var headers: [HTTPHeader] {
         let allHeaders: [HTTPHeader] = []
         switch self {
-        case .buckets:
+        case .buckets, .objects:
             return allHeaders
         case .bucketCors:
             return allHeaders
@@ -68,7 +74,7 @@ public enum R2Route: URLRequestRoutable {
     
     public var body: Data? {
         switch self {
-        case .buckets:
+        case .buckets, .objects:
             return nil
         case .bucketCors:
             return nil
@@ -81,6 +87,8 @@ public enum R2Route: URLRequestRoutable {
             return nil
         case .bucketCors:
              return [URLQueryItem(name: "cors", value: nil)]
+         case .objects:
+             return [URLQueryItem(name: "list-type", value: "2")]
         }
     }
 }

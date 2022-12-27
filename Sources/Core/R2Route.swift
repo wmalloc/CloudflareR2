@@ -10,7 +10,7 @@ import WebService
 
 public protocol URLRequestEncodable {
     func url(queryItems: [URLQueryItem]?) throws -> URL
-    func urlRequest(queryItems: [URLQueryItem]?, headers: [HTTPHeader]?) throws -> URLRequest
+    func urlRequest(queryItems: [URLQueryItem]?, headers: [HTTPHeader]?, body: Data?) throws -> URLRequest
 }
 
 public protocol URLRequestRoutable: URLRequestEncodable {
@@ -31,7 +31,8 @@ public enum R2Route: URLRequestRoutable {
     case bucketCors(String)
     
     case objects(String)
-    case object(String, String)
+    case getObject(String, String)
+    case putObject(String, String)
     
     public var method: HTTPMethod {
         switch self {
@@ -41,8 +42,10 @@ public enum R2Route: URLRequestRoutable {
             return .GET
         case .objects:
             return .GET
-        case .object:
+        case .getObject:
             return .GET
+        case .putObject:
+            return .PUT
         }
     }
     
@@ -55,7 +58,9 @@ public enum R2Route: URLRequestRoutable {
             return bucket + "." + host
         case .objects(let bucket):
             return bucket + "." + host
-        case .object(_, let bucket):
+        case .getObject(_, let bucket):
+            return bucket + "." + host
+        case .putObject(_, let bucket):
             return bucket + "." + host
         }
     }
@@ -64,9 +69,11 @@ public enum R2Route: URLRequestRoutable {
         switch self {
         case .buckets, .bucketCors, .objects:
             return ""
-        case .object(let name, _):
+        case .getObject(let name, _):
             return "/\(name)"
-        }
+        case .putObject(let name, _):
+            return "/\(name)"
+       }
     }
     
     public var headers: [HTTPHeader]? {
@@ -85,7 +92,7 @@ public enum R2Route: URLRequestRoutable {
              return [URLQueryItem(name: "cors", value: nil)]
          case .objects:
              return [URLQueryItem(name: "list-type", value: "2")]
-         case .object:
+         case .getObject, .putObject:
              return nil
         }
     }
@@ -107,7 +114,7 @@ extension R2Route: URLRequestEncodable {
         return url
     }
     
-    public func urlRequest(queryItems: [URLQueryItem]? = nil, headers: [HTTPHeader]? = nil) throws -> URLRequest {
+    public func urlRequest(queryItems: [URLQueryItem]? = nil, headers: [HTTPHeader]? = nil, body: Data? = nil) throws -> URLRequest {
         return URLRequest(url: try url(queryItems: queryItems))
             .setMethod(method)
             .setHttpBody(body)

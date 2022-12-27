@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import UniformTypeIdentifiers
+import WebService
 
 public extension R2Client {
     /**
@@ -15,7 +17,7 @@ public extension R2Client {
      
      - returns: Data Task which can be canceled
      */
-    func buckets(completion: ((Result<ListAllMyBucketsResult, Error>) -> Void)?) -> URLSessionDataTask? {
+    func listBuckets(completion: ((Result<ListAllMyBucketsResult, Error>) -> Void)?) -> URLSessionDataTask? {
         request(route: R2Route.buckets, completion: completion)
     }
     
@@ -40,7 +42,7 @@ public extension R2Client {
      
      - returns: Data Task which can be canceled
      */
-    func objects(bucket: String, parameters: [String: String?]? = nil, completion: ((Result<ListBucketResult, Error>) -> Void)?) -> URLSessionDataTask? {
+    func listObjects(bucket: String, parameters: [String: String?]? = nil, completion: ((Result<ListBucketResult, Error>) -> Void)?) -> URLSessionDataTask? {
         request(route: R2Route.objects(bucket), parameters: parameters, completion: completion)
     }
     
@@ -55,7 +57,44 @@ public extension R2Client {
      
      - returns: Data Task which can be canceled
      */
-    func object(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil, completion: ((Result<Data, Error>) -> Void)?) -> URLSessionDataTask? {
-        data(route: R2Route.object(name, bucket), parameters: parameters, completion: completion)
+    func getObject(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil, completion: ((Result<Data, Error>) -> Void)?) -> URLSessionDataTask? {
+        data(route: R2Route.getObject(name, bucket), parameters: parameters, completion: completion)
+    }
+    
+    /**
+     Adds an object to a bucket.
+     
+     - parameter name:       The object name to get
+     - parameter bucket:     The bucket name containing the object.
+     - parameter object:     The object we need to put
+     - parameter type:       Type of object
+     - parameter completion: Completion Handler
+     
+     - returns: Data Task which can be canceled
+     */
+    func putObject(name: String, toBucket bucket: String, object: Data, type: UTType, completion: ((Error?) -> Void)?) -> URLSessionDataTask? {
+        let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
+        guard let urlRequest = try? R2Route.putObject(name, bucket).urlRequest(headers: [header], body: object) else {
+            return nil
+        }
+        return webService.session.dataTask(with: urlRequest) { data, response, error in
+            if let error {
+                completion?(error)
+                return
+            }
+            
+            guard let response else {
+                completion?(URLError(.badServerResponse))
+                return
+            }
+
+            do {
+                try response.ws_validate()
+            } catch {
+                completion?(error)
+                return
+            }
+            completion?(nil)
+        }
     }
 }

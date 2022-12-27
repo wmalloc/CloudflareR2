@@ -37,8 +37,8 @@ public class R2Client {
      
      - returns: Data Task which can be canceled
      */
-    public func data(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil, completion: ((Result<Data, Error>) -> Void)?) -> URLSessionDataTask? {
-        guard let request = try? config.request(route: route, parameters: parameters, headers: headers) else {
+    public func data(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil, body: Data? = nil, completion: ((Result<Data, Error>) -> Void)?) -> URLSessionDataTask? {
+        guard let request = try? config.request(route: route, parameters: parameters, headers: headers, body: body) else {
             return nil
         }
         return webService.dataTask(with: request) { (response) -> Data in

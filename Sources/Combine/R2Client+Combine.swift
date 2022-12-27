@@ -11,6 +11,7 @@ import Combine
 import WebService
 import WebServiceCombine
 import XMLCoder
+import UniformTypeIdentifiers
 
 public extension R2Client {
     /**
@@ -59,7 +60,7 @@ public extension R2Client {
      
      - returns: Publisher which can be canceled
      */
-    func buckets() -> AnyPublisher<ListAllMyBucketsResult, Error> {
+    func listBuckets() -> AnyPublisher<ListAllMyBucketsResult, Error> {
         request(route: R2Route.buckets)
     }
     
@@ -82,7 +83,7 @@ public extension R2Client {
      
      - returns: Publisher which can be canceled
      */
-    func objects(bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<ListBucketResult, Error> {
+    func listObjects(bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<ListBucketResult, Error> {
         request(route: R2Route.objects(bucket), parameters: parameters)
      }
     
@@ -95,7 +96,29 @@ public extension R2Client {
 
      - returns: Publisher which can be canceled
      */
-    func object(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<Data, Error> {
-        data(route: R2Route.object(name, bucket), parameters: parameters)
+    func getObject(name: String, fromBucket bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<Data, Error> {
+        data(route: R2Route.getObject(name, bucket), parameters: parameters)
+    }
+    
+    /**
+     Adds an object to a bucket.
+     
+     - parameter name:       The object name to get
+     - parameter bucket:     The bucket name containing the object.
+     - parameter object:     The object we need to put
+     - parameter type:       Type of object
+     
+     - returns: Publisher which can be canceled
+     */
+    func putObject(name: String, toBucket bucket: String, object: Data, type: UTType) -> AnyPublisher<Void, Error>? {
+        let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
+        guard let urlRequest = try? R2Route.putObject(name, bucket).urlRequest(headers: [header], body: object) else {
+            return nil
+        }
+        
+        return webService.session.dataTaskPublisher(for: urlRequest)
+            .tryMap { _ in
+                ()
+            }.eraseToAnyPublisher()
     }
 }

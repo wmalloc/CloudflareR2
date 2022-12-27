@@ -79,6 +79,16 @@ public extension R2Client {
         let urlRequest = try config.request(route:  R2Route.createBucket(bucket), body: body)
         _ = try await webService.session.data(for: urlRequest, delegate: nil)
     }
+    
+    /**
+     Delete Bucket
+     
+     - parameter bucket:     Name of bucket
+     */
+    func deleteBucket(bucket: String) async throws {
+        let urlRequest = try config.request(route:  R2Route.deleteBucket(bucket))
+        _ = try await webService.session.data(for: urlRequest, delegate: nil)
+    }
 }
 
 public extension R2Client {

@@ -49,6 +49,18 @@ public extension R2Client {
         }
         return request(route: R2Route.createBucket(bucket), body: body, completion: completion)
     }
+    
+    /**
+     Delete Bucket
+     
+     - parameter bucket:     Name of bucket
+     - parameter completion: Completion Handler
+     
+     - returns: Data Task which can be canceled
+     */
+    func deleteBucket(bucket: String, completion: ((Error?) -> Void)?) -> URLSessionDataTask? {
+        request(route: R2Route.deleteBucket(bucket), completion: completion)
+    }
 }
 
 public extension R2Client {

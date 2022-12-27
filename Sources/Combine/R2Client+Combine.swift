@@ -95,13 +95,13 @@ public extension R2Client {
      
      - returns: Data Task Publisher
      */
-    func createBucket(bucket: String, location: String = "auto") -> AnyPublisher<Void, Error>? {
+    func createBucket(bucket: String, location: String = "auto") -> AnyPublisher<Void, Error> {
         let createConfig = CreateBucketConfiguration(locationConstraint: location)
         guard let body = try? encoder.encode(createConfig) else {
-            return nil
+            return Fail(error: URLError(.dataNotAllowed)).eraseToAnyPublisher()
         }
         guard let urlRequest = try? config.request(route: R2Route.createBucket(bucket), body: body) else {
-            return nil
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
         }
 
         return webService.session.dataTaskPublisher(for:  urlRequest)
@@ -110,6 +110,26 @@ public extension R2Client {
                 return ()
             }.eraseToAnyPublisher()
    }
+    
+    /**
+     Delete Bucket
+     
+     - parameter bucket:     Name of bucket
+     
+     - returns: Data Task Publisher
+     */
+    func deleteBucket(bucket: String) -> AnyPublisher<Void, Error> {
+        guard let urlRequest = try? config.request(route: R2Route.deleteBucket(bucket)) else {
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
+        }
+
+        return webService.session.dataTaskPublisher(for:  urlRequest)
+            .tryMap { (_, response) in
+                try response.ws_validate()
+                return ()
+            }.eraseToAnyPublisher()
+   }
+
 }
 
 public extension R2Client {
@@ -136,10 +156,10 @@ public extension R2Client {
      
      - returns: Publisher which can be canceled
      */
-    func putObject(name: String, toBucket bucket: String, object: Data, type: UTType) -> AnyPublisher<Void, Error>? {
+    func putObject(name: String, toBucket bucket: String, object: Data, type: UTType) -> AnyPublisher<Void, Error> {
         let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
         guard let urlRequest = try? config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object) else {
-            return nil
+            return Fail(error: URLError(.badURL)).eraseToAnyPublisher()
         }
         
         return webService.session.dataTaskPublisher(for: urlRequest)

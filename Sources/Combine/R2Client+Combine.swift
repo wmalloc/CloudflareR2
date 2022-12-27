@@ -85,8 +85,34 @@ public extension R2Client {
      */
     func listObjects(bucket: String, parameters: [String: String?]? = nil) -> AnyPublisher<ListBucketResult, Error> {
         request(route: R2Route.objects(bucket), parameters: parameters)
-     }
+    }
     
+    /**
+     Create Bucket
+     
+     - parameter bucket:     Name of bucket
+     - parameter location:   which zone (Default: "auto")
+     
+     - returns: Data Task Publisher
+     */
+    func createBucket(bucket: String, location: String = "auto") -> AnyPublisher<Void, Error>? {
+        let createConfig = CreateBucketConfiguration(locationConstraint: location)
+        guard let body = try? encoder.encode(createConfig) else {
+            return nil
+        }
+        guard let urlRequest = try? config.request(route: R2Route.createBucket(bucket), body: body) else {
+            return nil
+        }
+
+        return webService.session.dataTaskPublisher(for:  urlRequest)
+            .tryMap { (_, response) in
+                try response.ws_validate()
+                return ()
+            }.eraseToAnyPublisher()
+   }
+}
+
+public extension R2Client {
     /**
      Retrieves objects from Cloudflare R2.
      
@@ -117,8 +143,9 @@ public extension R2Client {
         }
         
         return webService.session.dataTaskPublisher(for: urlRequest)
-            .tryMap { _ in
-                ()
+            .tryMap { (_, response) in
+                try response.ws_validate()
+                return ()
             }.eraseToAnyPublisher()
     }
 }

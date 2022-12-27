@@ -32,6 +32,20 @@ public class R2Client {
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         return formatter
     }()
+    
+    public private(set) lazy var decoder: XMLDecoder = {
+        let decoder = XMLDecoder()
+        decoder.shouldProcessNamespaces = true
+        decoder.dateDecodingStrategy = .formatted(self.rfc3339DateFormatter)
+        return decoder
+    }()
+    
+    public private(set) lazy var encoder: XMLEncoder = {
+        let encoder = XMLEncoder()
+        encoder.dateEncodingStrategy = .formatted(self.rfc3339DateFormatter)
+        return encoder
+    }()
+    
     /**
      Return raw data
 
@@ -76,4 +90,31 @@ public class R2Client {
             completion?(result)
         }
     }
+    
+    public func request(route: URLRequestRoutable, parameters: [String: String?]? = nil, headers: [HTTPHeader]? = nil, body: Data? = nil, completion: ((Error?) -> Void)?) -> URLSessionDataTask? {
+        guard let urlRequest = try? config.request(route: route, parameters: parameters, headers: headers, body: body) else {
+            return nil
+        }
+        let task = webService.session.dataTask(with: urlRequest) { data, response, error in
+            if let error {
+                completion?(error)
+                return
+            }
+            
+            guard let response else {
+                completion?(URLError(.badServerResponse))
+                return
+            }
+
+            do {
+                try response.ws_validate()
+            } catch {
+                completion?(error)
+                return
+            }
+            completion?(nil)
+        }
+        task.resume()
+        return task
+   }
 }

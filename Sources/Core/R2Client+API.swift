@@ -34,6 +34,25 @@ public extension R2Client {
     }
     
     /**
+     Create Bucket
+     
+     - parameter bucket:     Name of bucket
+     - parameter location:   which zone (Default: "auto")
+     - parameter completion: Completion Handler
+     
+     - returns: Data Task which can be canceled
+     */
+    func createBucket(bucket: String, location: String = "auto", completion: ((Error?) -> Void)?) -> URLSessionDataTask? {
+        let createConfig = CreateBucketConfiguration(locationConstraint: location)
+        guard let body = try? encoder.encode(createConfig) else {
+            return nil
+        }
+        return request(route: R2Route.createBucket(bucket), body: body, completion: completion)
+    }
+}
+
+public extension R2Client {
+    /**
      Returns some or all (up to 1,000) of the objects in a bucket with each request. You can use the request parameters as selection criteria to return a subset of the objects in a bucket.
      
      - parameter bucket:     The bucket name containing the objects.
@@ -74,29 +93,6 @@ public extension R2Client {
      */
     func putObject(name: String, toBucket bucket: String, object: Data, type: UTType, completion: ((Error?) -> Void)?) -> URLSessionDataTask? {
         let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
-        guard let urlRequest = try? config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object) else {
-            return nil
-        }
-        let task = webService.session.dataTask(with: urlRequest) { data, response, error in
-            if let error {
-                completion?(error)
-                return
-            }
-            
-            guard let response else {
-                completion?(URLError(.badServerResponse))
-                return
-            }
-
-            do {
-                try response.ws_validate()
-            } catch {
-                completion?(error)
-                return
-            }
-            completion?(nil)
-        }
-        task.resume()
-        return task
-    }
+        return request(route: R2Route.putObject(name, bucket), headers: [header], completion: completion)
+     }
 }

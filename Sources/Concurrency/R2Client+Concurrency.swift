@@ -68,6 +68,21 @@ public extension R2Client {
     }
     
     /**
+     Create Bucket
+     
+     - parameter bucket:     Name of bucket
+     - parameter location:   which zone (Default: "auto")
+     */
+    func createBucket(bucket: String, location: String = "auto") async throws {
+        let createConfig = CreateBucketConfiguration(locationConstraint: location)
+        let body = try encoder.encode(createConfig)
+        let urlRequest = try config.request(route:  R2Route.createBucket(bucket), body: body)
+        _ = try await webService.session.data(for: urlRequest, delegate: nil)
+    }
+}
+
+public extension R2Client {
+    /**
      Returns some or all (up to 1,000) of the objects in a bucket with each request. You can use the request parameters as selection criteria to return a subset of the objects in a bucket.
      
      - parameter bucket:     The bucket name containing the objects.
@@ -103,10 +118,7 @@ public extension R2Client {
      */
     func putObject(name: String, toBucket bucket: String, object: Data, type: UTType) async throws {
         let header = HTTPHeader(name: URLRequest.Header.contentType, value: type.preferredMIMEType ?? type.identifier)
-        guard let urlRequest = try? config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object) else {
-            throw URLError(.badURL)
-        }
-        
+        let urlRequest = try config.request(route: R2Route.putObject(name, bucket), headers: [header], body: object)
         _ = try await webService.session.data(for: urlRequest, delegate: nil)
     }
 }

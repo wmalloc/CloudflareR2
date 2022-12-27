@@ -29,6 +29,7 @@ public enum R2Route: URLRequestRoutable {
     
     case buckets
     case bucketCors(String)
+    case createBucket(String)
     
     case objects(String)
     case getObject(String, String)
@@ -40,6 +41,9 @@ public enum R2Route: URLRequestRoutable {
             return .GET
         case .bucketCors:
             return .GET
+        case .createBucket:
+            return .PUT
+            
         case .objects:
             return .GET
         case .getObject:
@@ -56,6 +60,9 @@ public enum R2Route: URLRequestRoutable {
             return host
         case .bucketCors(let bucket):
             return bucket + "." + host
+        case .createBucket(let bucket):
+            return bucket + "." + host
+    
         case .objects(let bucket):
             return bucket + "." + host
         case .getObject(_, let bucket):
@@ -67,7 +74,9 @@ public enum R2Route: URLRequestRoutable {
     
     public var path: String {
         switch self {
-        case .buckets, .bucketCors, .objects:
+        case .buckets, .bucketCors, .createBucket:
+            return ""
+        case .objects:
             return ""
         case .getObject(let name, _):
             return "/\(name)"
@@ -86,7 +95,7 @@ public enum R2Route: URLRequestRoutable {
     
     public var queryItems: [URLQueryItem]? {
          switch self {
-        case .buckets:
+         case .buckets, .createBucket:
             return nil
         case .bucketCors:
              return [URLQueryItem(name: "cors", value: nil)]

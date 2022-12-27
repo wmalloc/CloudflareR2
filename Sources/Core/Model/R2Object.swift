@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct R2Object: Codable, Hashable {
+public struct R2Object: Codable, Hashable, Sendable {
     let checksumAlgorithm: [String]?
     let etag: String?
     let key: String?
@@ -15,6 +15,16 @@ public struct R2Object: Codable, Hashable {
     let owner: Owner?
     let size: Int?
     let storageClass: String?
+    
+    public init(checksumAlgorithm: [String]?, etag: String?, key: String?, lastModified: Date?, owner: Owner?, size: Int?, storageClass: String?) {
+        self.checksumAlgorithm = checksumAlgorithm
+        self.etag = etag
+        self.key = key
+        self.lastModified = lastModified
+        self.owner = owner
+        self.size = size
+        self.storageClass = storageClass
+    }
     
     private enum CodingKeys: String, CodingKey {
         case checksumAlgorithm = "ChecksumAlgorithm"

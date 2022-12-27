@@ -7,9 +7,13 @@
 
 import Foundation
 
-public struct Prefix: Codable, Hashable {
+public struct Prefix: Codable, Hashable, Sendable {
     let prefix: String
     
+    public init(prefix: String) {
+        self.prefix = prefix
+    }
+
     private enum CodingKeys: String, CodingKey {
         case prefix = "Prefix"
     }
